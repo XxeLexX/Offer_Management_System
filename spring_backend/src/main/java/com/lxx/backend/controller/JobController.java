@@ -12,53 +12,38 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lxx.backend.exception.JobNotFoundException;
 import com.lxx.backend.model.Job;
-import com.lxx.backend.repository.JobRepository;
+import com.lxx.backend.service.JobService;
 
 @RestController
 @CrossOrigin("http://localhost:3000")
 public class JobController {
     
     @Autowired
-    private JobRepository jobRepository;
+    private JobService jobService;
 
-    // wirte the table to database
     @PostMapping("/job")
     public Job newJob(@RequestBody Job newJob) {
-        return jobRepository.save(newJob);
+        return jobService.createJob(newJob);
     }
 
-    // get all data from database
     @GetMapping("/get_all_jobs")
     public List<Job> getAlljobs() {
-        return jobRepository.findAll();
+        return jobService.getAllJobs();
     }
 
     @GetMapping("/job/{id}")
     Job getJobById(@PathVariable Long id) {
-        return jobRepository.findById(id)
-                .orElseThrow(() -> new JobNotFoundException(id));
+        return jobService.getJobById(id);
     }
 
     @DeleteMapping("/job/{id}")
     String deleteJob(@PathVariable Long id) {
-        if(!jobRepository.existsById(id)){
-            throw new JobNotFoundException(id);
-        }
-        jobRepository.deleteById(id);
-        return "Job with id " + id + " has been deleted success.";
+        return jobService.deleteJob(id);
     }
 
     @PutMapping("/job/{id}")
     Job updateJob(@RequestBody Job newJob, @PathVariable Long id) {
-        return jobRepository.findById(id)
-                .map(job -> {
-                    job.setCompanyName(newJob.getCompanyName());
-                    job.setPosition(newJob.getPosition());
-                    job.setLocation(newJob.getLocation());
-                    job.setStatus(newJob.getStatus());
-                    return jobRepository.save(job);
-                }).orElseThrow(() -> new JobNotFoundException(id));
+        return jobService.updateJob(newJob, id);
     }
 }
